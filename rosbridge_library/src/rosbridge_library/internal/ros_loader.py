@@ -32,7 +32,7 @@ import time
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import roslib
+#import roslib
 import rospy
 
 from threading import Lock
@@ -179,20 +179,24 @@ def _load_class(modname, subname, classname):
     Returns the loaded module, or None on failure """
     global loaded_modules
 
-    try:
-        with _manifest_lock:
-            # roslib maintains a cache of loaded manifests, so no need to duplicate
-            roslib.launcher.load_manifest(modname)
-    except Exception as exc:
-        raise InvalidPackageException(modname, exc)
+    # try:
+    #     with _manifest_lock:
+    #         # roslib maintains a cache of loaded manifests, so no need to duplicate
+    #         roslib.launcher.load_manifest(modname)
+    # except Exception as exc:
+    #     raise InvalidPackageException(modname, exc)
 
     try:
+        rospy.logwarn("importing %s.%s" %(modname, subname))
         pypkg = __import__('%s.%s' % (modname, subname))
+        rospy.logwarn("imported")
     except Exception as exc:
         raise InvalidModuleException(modname, subname, exc)
 
     try:
-        return getattr(getattr(pypkg, subname), classname)
+        trimed_classname = classname[:-4]
+        rospy.logwarn("getattr %s %s %s" % (pypkg, subname, trimed_classname))
+        return getattr(getattr(pypkg, subname), trimed_classname)
     except Exception as exc:
         raise InvalidClassException(modname, subname, classname, exc)
 
